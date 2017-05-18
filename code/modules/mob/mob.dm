@@ -1121,7 +1121,7 @@ var/list/slot_equipment_priority = list( \
             if(length(msg) <= 32)
                 return "<font color='#ffa000'><b>[msg]</b></font>"
             else
-                return "<font color='#ffa000'><b>[copytext(msg, 1, 32)]...<a href='?src=\ref[user];flavor_text=1'>More</a></b></font>"
+                return "<font color='#ffa000'><b>[copytext(msg, 1, 32)]...<a href='?src=\ref[user];flavor_text=[flavor_text];target_name=[name]'>More</a></b></font>"
 
 /mob/verb/abandon_mob()
 	set name = "Respawn"
@@ -1338,9 +1338,10 @@ var/list/slot_equipment_priority = list( \
 	//		var/client/C = usr.client
 	//		C.JoinResponseTeam()
 
-	if(href_list["flavor_text"])
-		src << browse(text("<HTML><HEAD><TITLE>[]</TITLE></HEAD><BODY><TT>[]</TT></BODY></HTML>", name, replacetext(flavor_text, "\n", "<BR>")), text("window=[];size=500x200", name))
-		onclose(usr, "[name]")
+	if((href_list["flavor_text"]) && (href_list["target_name"]))
+		var/datum/browser/popup = new(src, "\ref[src]", href_list["target_name"], 500, 200)
+		popup.set_content(replacetext(href_list["flavor_text"], "\n", "<br>"))
+		popup.open()
 
 /mob/MouseDrop(mob/M as mob)
 	..()
