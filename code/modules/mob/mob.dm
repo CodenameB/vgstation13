@@ -954,7 +954,7 @@ var/list/slot_equipment_priority = list( \
 	if (ismob(AM))
 		var/mob/M = AM
 		if (M.locked_to) //If the mob is locked_to on something, let's just try to pull the thing they're locked_to to for convenience's sake.
-			P = M.locked_to		
+			P = M.locked_to
 
 	if (!P.anchored)
 		P.add_fingerprint(src)
@@ -978,7 +978,7 @@ var/list/slot_equipment_priority = list( \
 				M.LAssailant = usr
 				/*if(ishuman(AM))
 					var/mob/living/carbon/human/HM = AM
-					if (HM.drag_damage()) 
+					if (HM.drag_damage())
 						if (HM.isincrit())
 							to_chat(usr,"<span class='warning'>Pulling \the [HM] in their current condition would probably be a bad idea.</span>")
 							add_logs(src, HM, "started dragging critically wounded", admin = (HM.ckey))*/
@@ -1088,6 +1088,40 @@ var/list/slot_equipment_priority = list( \
 
 	face_atom(I)
 	I.verb_pickup(src)
+
+/mob/proc/update_flavor_text()
+	set src in usr
+
+	if(usr != src)
+		to_chat(usr, "No.")
+		return
+
+	var/msg = input(usr,"Set the flavor text in your 'examine' verb. Can also be used for OOC notes about your character.","Flavor Text",html_decode(flavor_text)) as message|null
+
+	if(msg != null)
+		msg = copytext(msg, 1, MAX_MESSAGE_LEN)
+		msg = html_encode(msg)
+
+		flavor_text = msg
+
+/mob/proc/warn_flavor_changed()
+	if(flavor_text) // Don't spam people that don't use it!
+		to_chat(src, "<h2 class='alert'>OOC Warning:</h2>")
+		to_chat(src, "<span class='alert'>Your flavor text is likely out of date! <a href='?src=\ref[src];flavor_text=change'>Change</a></span>")
+
+/mob/proc/print_flavor_text()
+    if(flavor_text)
+        var/msg = replacetext(flavor_text, "\n", "<br />")
+        if (ishuman(src))
+            var/mob/living/carbon/human/H = src
+            var/datum/organ/external/head/limb_head = H.get_organ(LIMB_HEAD)
+            if((wear_mask && (is_slot_hidden(wear_mask.body_parts_covered,HIDEFACE))) || (H.head && (is_slot_hidden(H.head.body_parts_covered,HIDEFACE))) || !limb_head || limb_head.disfigured || (limb_head.status & ORGAN_DESTROYED) || !real_name || (M_HUSK in mutations) ) //Wearing a mask, having no head, being disfigured, or being a husk means no flavor text for you.
+                return
+
+            if(length(msg) <= 32)
+                return "<font color='#ffa000'><b>[msg]</b></font>"
+            else
+                return "<font color='#ffa000'><b>[copytext(msg, 1, 32)]...<a href='?src=\ref[src];flavor_text=[user]'>More</a></b></font>"
 
 /mob/verb/abandon_mob()
 	set name = "Respawn"
@@ -1303,6 +1337,11 @@ var/list/slot_equipment_priority = list( \
 	//	if(usr.client)
 	//		var/client/C = usr.client
 	//		C.JoinResponseTeam()
+
+ 	switch(href_list["flavor_text"])
+        if("more")
+            usr << browse(text("<HTML><HEAD><TITLE>[]</TITLE></HEAD><BODY><TT>[]</TT></BODY></HTML>", name, replacetext(flavor_text, "\n", "<BR>")), text("window=[];size=500x200", name))
+            onclose(usr, "[name]")
 
 /mob/MouseDrop(mob/M as mob)
 	..()
