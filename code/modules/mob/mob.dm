@@ -1109,7 +1109,7 @@ var/list/slot_equipment_priority = list( \
 		to_chat(src, "<h2 class='alert'>OOC Warning:</h2>")
 		to_chat(src, "<span class='alert'>Your flavor text is likely out of date! <a href='?src=\ref[src];flavor_text=change'>Change</a></span>")
 
-/mob/proc/print_flavor_text()
+/mob/proc/print_flavor_text(user)
     if(flavor_text)
         var/msg = replacetext(flavor_text, "\n", "<br />")
         if (ishuman(src))
@@ -1121,7 +1121,7 @@ var/list/slot_equipment_priority = list( \
             if(length(msg) <= 32)
                 return "<font color='#ffa000'><b>[msg]</b></font>"
             else
-                return "<font color='#ffa000'><b>[copytext(msg, 1, 32)]...<a href='?src=\ref[src];flavor_text=[user]'>More</a></b></font>"
+                return "<font color='#ffa000'><b>[copytext(msg, 1, 32)]...<a href='?src=\ref[user];flavor_text=1'>More</a></b></font>"
 
 /mob/verb/abandon_mob()
 	set name = "Respawn"
@@ -1338,10 +1338,9 @@ var/list/slot_equipment_priority = list( \
 	//		var/client/C = usr.client
 	//		C.JoinResponseTeam()
 
- 	switch(href_list["flavor_text"])
-        if("more")
-            usr << browse(text("<HTML><HEAD><TITLE>[]</TITLE></HEAD><BODY><TT>[]</TT></BODY></HTML>", name, replacetext(flavor_text, "\n", "<BR>")), text("window=[];size=500x200", name))
-            onclose(usr, "[name]")
+	if(href_list["flavor_text"])
+		src << browse(text("<HTML><HEAD><TITLE>[]</TITLE></HEAD><BODY><TT>[]</TT></BODY></HTML>", name, replacetext(flavor_text, "\n", "<BR>")), text("window=[];size=500x200", name))
+		onclose(usr, "[name]")
 
 /mob/MouseDrop(mob/M as mob)
 	..()
